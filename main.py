@@ -4,7 +4,7 @@ import getTime
 import zipfile
 import os
 
-userid='' #Changeit
+userid='11814738gjdwn7' #Changeit
 demoPath = './demo'  # 替换为实际demo解压路径
 
 # 请求的URL
@@ -44,7 +44,7 @@ uuid = get_uuid(url_getuuid, {
 print(f"The UUID is: {uuid}")
 
 # 构造目标URL
-url_getmatchid = f'https://gate.5eplay.com/crane/http/api/data/player_match?uuid={uuid}'
+url_getmatchid = f'https://gate.5eplay.com/crane/http/api/data/match/list?match_type=-1&page=1&date=0&start_time={getTime.get_timestamp_half_year_ago()}&end_time={getTime.get_end_of_day_timestamp()}&uuid={uuid}&limit=30&cs_type=0'
 
 
 def get_matchids(url_getmatchid):
@@ -54,7 +54,7 @@ def get_matchids(url_getmatchid):
     # 解析JSON数据
         data = response_getmatchid.json()
     # 提取match_data列表
-        match_data = data.get('data', {}).get('match_data', [])
+        match_data = data.get('data', {})
     
     # 遍历match_data列表，提取每个match_id
         match_ids = [match['match_id'] for match in match_data]
@@ -139,7 +139,7 @@ def download_and_extract(url, demoPath):
     os.remove(local_filename)
     print(f"File downloaded and extracted to {demoPath}")
 
-# 使用函数
+# 批量下载demo文件
 for _ , demo_url in demo_urls.items():
     download_and_extract(demo_url, demoPath)
 

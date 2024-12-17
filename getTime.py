@@ -47,3 +47,18 @@ def get_timestamp_three_month_ago():
     
     return timestamp
 
+def get_timestamp_half_year_ago():
+    # 获取当前时间
+    now = datetime.datetime.now()
+    
+    # 计算15天前的日期
+    half_month_ago = now - datetime.timedelta(days=180)
+    
+    # 设置时间为当天的23:59:59
+    end_of_day = half_month_ago.replace(hour=23, minute=59, second=59)
+    
+    # 将datetime对象转换为Unix时间戳
+    timestamp = int(time.mktime(end_of_day.timetuple()))
+    
+    return timestamp
+
