@@ -44,7 +44,8 @@ uuid = get_uuid(url_getuuid, {
 print(f"The UUID is: {uuid}")
 
 # 构造目标URL
-url_getmatchid = f'https://gate.5eplay.com/crane/http/api/data/match/list?match_type=-1&page=1&date=0&start_time={getTime.get_timestamp_half_year_ago()}&end_time={getTime.get_end_of_day_timestamp()}&uuid={uuid}&limit=30&cs_type=0'
+# url_getmatchid = f'https://gate.5eplay.com/crane/http/api/data/match/list?match_type=-1&page=1&date=0&start_time={getTime.get_timestamp_half_year_ago()}&end_time={getTime.get_end_of_day_timestamp()}&uuid={uuid}&limit=30&cs_type=0'
+url_getmatchid = f'https://gate.5eplay.com/crane/http/api/data/match/list?match_type=-1&page=1&date=0&start_time=0&end_time=0&uuid={uuid}&limit=30&cs_type=1'
 
 
 def get_matchids(url_getmatchid):
@@ -64,6 +65,9 @@ def get_matchids(url_getmatchid):
         print("Failed to retrieve data, status code:", response_getmatchid.status_code)
 
 match_ids=get_matchids(url_getmatchid)
+
+for matchid in match_ids:
+    print(matchid)
     
 
 def get_demo_url(match_id):
@@ -131,6 +135,10 @@ def download_and_extract(url, demoPath):
         return
     # 从URL中提取文件名
     filename = url.split('/')[-1]
+    filename = os.path.join(demoPath, filename)
+    if os.path.exists(filename):
+        print(f"File {filename} already exists. Skipping download.")
+        return
     # 下载文件
     local_filename = download_file(url, filename)
     # 解压文件
