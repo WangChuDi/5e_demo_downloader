@@ -3,6 +3,7 @@ import json
 import getTime
 import zipfile
 import os
+import configparser
 
 userid='11814738gjdwn7' #Changeit
 demoPath = './demo'  # 替换为实际demo解压路径
@@ -35,16 +36,8 @@ def get_uuid(url, payload):
         return f"An error occurred: {e}"
 
 
-# 调用函数并打印结果
-uuid = get_uuid(url_getuuid, {
-    "trans": {
-        "domain": userid
-    }
-})
-print(f"The UUID is: {uuid}")
 
-# 构造目标URL
-url_getmatchid = f'https://gate.5eplay.com/crane/http/api/data/match/list?match_type=-1&page=1&date=0&start_time={getTime.get_timestamp_half_year_ago()}&end_time={getTime.get_end_of_day_timestamp()}&uuid={uuid}&limit=30&cs_type=0'
+
 
 
 def get_matchids(url_getmatchid):
@@ -63,7 +56,7 @@ def get_matchids(url_getmatchid):
     else:
         print("Failed to retrieve data, status code:", response_getmatchid.status_code)
 
-match_ids=get_matchids(url_getmatchid)
+
     
 
 def get_demo_url(match_id):
@@ -88,15 +81,9 @@ def get_demo_url(match_id):
         return f"An error occurred while requesting match {match_id}: {e}"
 
 
-# 循环遍历match_ids数组，并获取每个matchid的demo下载链接
-demo_urls = {}
-for match_id in match_ids:
-    demo_url = get_demo_url(match_id)
-    demo_urls[match_id] = demo_url
 
-# 打印所有demo的下载链接
-for match_id, demo_url in demo_urls.items():
-    print(f"Demo URL for match {match_id}: {demo_url}")
+
+
 
 # today_end_of_day_timestamp = getTime.get_end_of_day_timestamp()
 # print("Today's end of day timestamp:", today_end_of_day_timestamp)
@@ -131,6 +118,14 @@ def download_and_extract(url, demoPath):
         return
     # 从URL中提取文件名
     filename = url.split('/')[-1]
+    # 检查文件是否已经存在
+        # 解压后的文件名（假设解压后的文件名是去掉.zip后的名字）
+    dem_filename = filename.replace('.zip', '.dem')
+    dem_filename = os.path.join(demoPath, dem_filename)
+    print(f'local_filename: {dem_filename}')
+    if os.path.exists(dem_filename):
+        print(f"File {dem_filename} already exists in {demoPath}, skipping download and extraction.")
+        return
     # 下载文件
     local_filename = download_file(url, filename)
     # 解压文件
@@ -139,10 +134,41 @@ def download_and_extract(url, demoPath):
     os.remove(local_filename)
     print(f"File downloaded and extracted to {demoPath}")
 
-# 批量下载demo文件
-for _ , demo_url in demo_urls.items():
-    download_and_extract(demo_url, demoPath)
 
+
+if __name__ == '__main__':
+    # 读取配置文件
+    cf = configparser.ConfigParser()
+    cf.read("config.ini")  # 读取配置文件，如果写文件的绝对路径，就可以不用os模块
+
+    secs = cf.sections()  # 获取文件中所有的section(一个配置文件中可以有多个配置，如数据库相关的配置，邮箱相关的配置，
+                        #  每个section由[]包裹，即[section])，并以列表的形式返回
+    for user in secs:
+        options = cf.options(user)
+        userid=cf.get(user,"userid")
+        demoPath = cf.get(user,"demoPath")
+        uuid = get_uuid(url_getuuid, {
+            "trans": {
+                "domain": userid
+            }
+        })
+        print(f"The User {user} UUID is: {uuid}")
+        # 构造matchid列表的URL
+        url_getmatchid = f'https://gate.5eplay.com/crane/http/api/data/match/list?match_type=-1&page=1&date=0&start_time={getTime.get_timestamp_half_year_ago()}&end_time={getTime.get_end_of_day_timestamp()}&uuid={uuid}&limit=30&cs_type=0'
+        match_ids=get_matchids(url_getmatchid)
+        # 循环遍历match_ids数组，并获取每个matchid的demo下载链接
+        demo_urls = {}
+        for match_id in match_ids:
+            demo_url = get_demo_url(match_id)
+            demo_urls[match_id] = demo_url
+
+        # 打印所有demo的下载链接
+        for match_id, demo_url in demo_urls.items():
+            print(f"Demo URL for match {match_id}: {demo_url}")
+        
+        # 批量下载demo文件
+        for _ , demo_url in demo_urls.items():
+            download_and_extract(demo_url, demoPath)
 
 
 

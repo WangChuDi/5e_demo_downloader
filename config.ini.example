@@ -1,0 +1,8 @@
+[yourself] #changeit
+userid=11814738gjdwn7 
+demoPath = ./demos/yourself/
+
+
+[advent] #changeit
+userid=
+demoPath = ./demos/demo_advent/
